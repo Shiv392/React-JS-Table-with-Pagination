@@ -5,6 +5,8 @@ const DynamicTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filterValue, setFilterValue] = useState('');
+  const [sortField, setSortField] = useState('id'); // Initial sort field
+  const [sortOrder, setSortOrder] = useState('asc');
 
   useEffect(() => {
     // Fetch data from the API
@@ -23,9 +25,21 @@ const DynamicTable = () => {
     setCurrentPage(1); // Reset current page when filter value changes
   };
 
+  const handleSort = (field) => {
+    if (field === sortField) {
+      const newSortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+      setSortOrder(newSortOrder);
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+ 
+
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
+
 
   const filteredData = applyFilter();
   const totalItems = filteredData.length;
@@ -34,6 +48,16 @@ const DynamicTable = () => {
   const endIndex = startIndex + itemsPerPage;
   const itemsToShow = filteredData.slice(startIndex, endIndex);
 
+ // Sorting
+ const sortCompare = (a, b) => {
+    if (sortField === 'id' || sortField === 'userId') {
+      return sortOrder === 'asc' ? a[sortField] - b[sortField] : b[sortField] - a[sortField];
+    } else {
+      return sortOrder === 'asc' ? a[sortField].localeCompare(b[sortField]) : b[sortField].localeCompare(a[sortField]);
+    }
+  };
+  itemsToShow.sort(sortCompare);
+
   return (
     <div className='container mt-2'>
       <input className='form-control' type="text" value={filterValue} onChange={handleFilterChange} placeholder="Filter by title" />
@@ -41,9 +65,15 @@ const DynamicTable = () => {
       <table className='table table-bordered'>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>userId</th>
+            <th><button className='btn btn-sm btn-light' onClick={() => handleSort('id')}>
+                ID {sortField === 'id' && sortOrder === 'asc' ? <>&#9650;</> : <>&#9660;</>}
+              </button></th>
+            <th> <button className='btn btn-sm btn-light' onClick={() => handleSort('title')}>
+                Title {sortField === 'title' && sortOrder === 'asc' ? <>&#9650;</> : <>&#9660;</>}
+              </button></th>
+            <th><button className='btn btn-sm btn-light' onClick={() => handleSort('userId')}>
+                UserID {sortField === 'userId' && sortOrder === 'asc' ? <>&#9650;</> : <>&#9660;</>}
+              </button></th>
           </tr>
         </thead>
         <tbody>
